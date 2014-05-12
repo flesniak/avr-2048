@@ -74,47 +74,53 @@ uint8_t moveTiles( dir_t direction ) {
   uint8_t moves = 0;
   if( direction == right )
     for( uint8_t row = 0; row < 4; row++ )
-      for( uint8_t col = 3; col > 0; )
+      for( uint8_t col = 1; col < 4; col++ )
         if( board[row][col] == 0 ) {
-          moves++;
           for( uint8_t moveCol = col; moveCol > 0; moveCol-- )
-            board[row][moveCol] = board[row][moveCol-1];
+            if( board[row][moveCol-1] ) {
+              board[row][moveCol] = board[row][moveCol-1];
+              moves++;
+            }
           board[row][0] = 0;
-        } else
-          col--;
+        }
 
   if( direction == left )
     for( uint8_t row = 0; row < 4; row++ )
-      for( uint8_t col = 0; col < 3; )
+      for( int8_t col = 2; col >= 0; col-- )
         if( board[row][col] == 0 ) {
           moves++;
-          for( uint8_t moveCol = col; moveCol < 3; moveCol++ )
-            board[row][moveCol] = board[row][moveCol+1];
+          for( uint8_t moveCol = col; moveCol < 4; moveCol++ )
+            if( board[row][moveCol] ) {
+              board[row][moveCol-1] = board[row][moveCol];
+              moves++;
+            }
           board[row][3] = 0;
-        } else
-          col++;
-
-  if( direction == up )
-    for( uint8_t col = 0; col < 4; col++ )
-      for( uint8_t row = 0; row < 3; )
-        if( board[row][col] == 0 ) {
-          moves++;
-          for( uint8_t moveRow = row; moveRow < 3; moveRow++ )
-            board[moveRow][col] = board[moveRow+1][col];
-          board[3][col] = 0;
-        } else
-          row++;
+        }
 
   if( direction == down )
     for( uint8_t col = 0; col < 4; col++ )
-      for( uint8_t row = 3; row > 0; )
+      for( uint8_t row = 1; row < 4; row++ )
+        if( board[row][col] == 0 ) {
+          for( uint8_t moveRow = row; moveRow > 0; moveRow-- )
+            if( board[moveRow-1][col] ) {
+              board[moveRow][col] = board[moveRow-1][col];
+              moves++;
+            }
+          board[0][col] = 0;
+        }
+
+  if( direction == up )
+    for( uint8_t col = 0; col < 4; col++ )
+      for( int8_t row = 2; row >= 0; row-- )
         if( board[row][col] == 0 ) {
           moves++;
-          for( uint8_t moveRow = row; moveRow > 0; moveRow-- )
-            board[moveRow][col] = board[moveRow-1][col];
-          board[0][col] = 0;
-        } else
-          row--;
+          for( uint8_t moveRow = row; moveRow < 4; moveRow++ )
+            if( board[moveRow][col] ) {
+              board[moveRow-1][col] = board[moveRow][col];
+              moves++;
+            }
+          board[3][col] = 0;
+        }
 
   return moves;
 }
@@ -219,17 +225,6 @@ int main() {
   //init PORTC (buttons on PC0-3, debug led on PC5)
   DDRC = 0b00100000;
   PORTC = 0b00001111;
-
-/*  while(1) {
-   if( BTN_UP )
-     PORTC ^= 0b00100000;
-   if( BTN_LEFT )
-     PORTC ^= 0b00100000;
-   if( BTN_RIGHT )
-     PORTC ^= 0b00100000;
-   if( BTN_DOWN )
-     PORTC ^= 0b00100000;
-  }*/
 
   init();
   setMode1(true,false); //cursor increment on, display shifting off
